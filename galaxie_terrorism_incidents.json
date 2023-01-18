@@ -1,0 +1,11 @@
+{
+    "description":"Description of terrorist incidents until 2020",
+    "icon":"bomb",
+    "name": "Terrorist incidents",
+    "namespace": "terrorism",
+    "authors": ["Alexandre BEINING"],
+    "type":"terrorism",
+    "source": "https://www.start.umd.edu/gtd/",
+    "uuid":"9cdaf175-a972-44a9-900d-df459087569f",
+    "version":"1"
+}
