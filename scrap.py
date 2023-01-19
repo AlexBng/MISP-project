@@ -1,6 +1,8 @@
 import requests
 import re
 from bs4 import BeautifulSoup
+import json
+
 
 # Récupération du code source de la page
 url_advance_search = "https://www.start.umd.edu/gtd/search/"
@@ -28,7 +30,7 @@ for option in options:
     terrorist_groups[option['value']] = option.text
 
 # Affichage du dictionnaire
-print(terrorist_groups)
+# print(terrorist_groups)
 
 
 
@@ -44,7 +46,7 @@ i=0
 # Iterate through the keys (i.e., the group ids) in the terrorist_groups dictionary
 for key in terrorist_groups:
 
-    if i==20:
+    if i==200:
         break
     i+=1
     # Initialize an empty list to store the incident ids for the current group
@@ -104,8 +106,11 @@ characteristics = {'Description':None, 'Date': None, 'Country': None, 'Region': 
 'PerpetratorsNumber': None, 'CapturedPerpetratorsNumber': None, 'CasualitiesNumber': None, 'FatalitiesNumber': None, 'PerpetratorsFatalitiesNumber': None, 
 'InjuredNumber': None, 'PerpetratorsInjuredNumber': None, 'Sources': None}
 
-for key in incidents_characteristics:
+with open('data.json', 'w') as f:
+    f.truncate(0)
 
+for key in incidents_characteristics:
+    print(key)
     url_incident = "https://www.start.umd.edu/gtd/search/IncidentSummary.aspx?gtdid=" + key
 
     response = requests.get(url_incident)
@@ -169,14 +174,22 @@ for key in incidents_characteristics:
         characteristics['TargetNationality3'] = targetNationality[2].find_next_sibling("td").text
 
 
-    characteristics['Hostages'] = soup.find("td", text="Hostages").find_next_sibling("td").text
+    hostage = soup.find("td", text="Hostages")
+    if(hostage):
+        characteristics['Hostages'] = hostage.find_next_sibling("td").text
 
     number = soup.find("td", text="Number of Hostages")
     if(number):
         characteristics['HostagesNumber'] = number.find_next_sibling("td").text
     # Ransom fields missing (ex : 197802190002)
-    characteristics['Ransom'] = soup.find("td", text="Ransom").find_next_sibling("td").text
-    characteristics['PropertyDamage'] = soup.find("td", text="Property Damage").find_next_sibling("td").text
+
+    ransom = soup.find("td", text="Ransom")
+    if(ransom):
+        characteristics['Ransom'] = ransom.find_next_sibling("td").text
+
+    propertyDamage = soup.find("td", text="Property Damage")
+    if(propertyDamage):
+        characteristics['PropertyDamage'] = propertyDamage.find_next_sibling("td").text
 
     extent = soup.find("td", text="Extent of Property Damage")
     if(extent):
@@ -238,4 +251,52 @@ for key in incidents_characteristics:
     for tr in soup.find('caption', text='Sources').find_next_sibling('tbody').find_all('tr'):
         sources.append(tr.find('td').text)
     characteristics['Sources'] = sources
+
     print(characteristics)
+    # Stock the data
+    with open('data.json', 'a') as f:
+        json.dump(characteristics, f)
+        f.write("\n")
+
+    # Reinitialisation
+    for key in characteristics:
+        characteristics[key] = None
+
+#  all_files = glob.glob("/Users/bryanbaumgartner/Documents/Study/M2/TI/docker/scrapping/ammo/*.txt")
+#     cluster_incidents = {
+#     "description":"Description of terrorist incidents until 2020",
+#     "icon":"bomb",
+#     "name": "Terrorist incidents",
+#     "namespace": "terrorism",
+#     "authors": ["Alexandre BEINING"],
+#     "type":"terrorism",
+#     "source": "https://www.start.umd.edu/gtd/",
+#     "uuid":"9cdaf175-a972-44a9-900d-df459087569f",
+#     "version":"1"
+# }
+#     f = open("ammunitions.json", 'a')
+#     for file in all_files :
+#         with open(file, "r") as ammos :
+#             if os.path.getsize(file) != 0 :
+#                 lines = ammos.readlines()
+#                 for ammo in lines :
+#                     #do something with the data
+#                     manu = ammo.split()[0].strip()
+#                     name = ammo.split("-")[0].strip()
+#                     caliber = vendors = name.split()[1:]
+#                     caliber = ' '.join(caliber).strip()
+#                     description = ammo.split("-")[1].replace("\n", "").strip()
+#                     meta = {
+#                         "manufacturer": manu,
+#                         "name": name,
+#                         "caliber": caliber,
+#                         "description": description
+#                     }
+
+#                     new_value = {
+#                         "meta": meta,
+#                         "uuid": uuidgen(),
+#                         "value": name
+#                     }
+#                     cluster_ammo_vendors["values"].append(new_value)
+#     f.write (json.dumps(cluster_ammo_vendors))
