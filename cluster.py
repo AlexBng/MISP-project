@@ -1,5 +1,6 @@
 import json
 import os
+import re
 
 def ajout_incident(cluster, incident):
         meta = {}
@@ -9,7 +10,7 @@ def ajout_incident(cluster, incident):
         new_value = {
                 "meta": meta,
                 "uuid": os.popen("uuidgen").read().strip().lower(),
-                "value": incident["Description"],
+                "value": incident["Date"] + " - " + incident["City"],
         }
 
         cluster["values"].append(new_value)
